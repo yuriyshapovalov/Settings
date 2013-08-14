@@ -1,0 +1,7 @@
+" https://github.com/scrooloose/vimfiles/blob/master/vimrc "
+set nocompatible
+
+set showcmd
+set showmode
+
+set number
