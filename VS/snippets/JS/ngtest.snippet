@@ -3,23 +3,21 @@
     xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
     <CodeSnippet Format="1.0.0">
         <Header>
-            <Title>Angular Stub</Title>
+            <Title>Angular File Stub</Title>
             <Author>Yuriy Shapovalov</Author>
             <Description>Inserts angular stub js file</Description>
-            <Shortcut>ngstub</Shortcut>
+            <Shortcut>ngtest</Shortcut>
         </Header>
         <Snippet>
             <Code Language="JavaScript">
-                <![CDATA[ /**
- * @file $selected$
- * @author Yuriy Shapovalov (mailto:shapovalov.yuri@gmail.com)
- * @copyright Yuriy Shapovalov 2014
+                <![CDATA[/**
+ * Unit tests for $covered_file$
  */
-'use strict';
+describe('$component$', function() {
+    beforeEach(module('$module_under_test$'));
 
-angular.module('$module$', [$dependencies$])
-
-$end$
+    $end$
+});
                 ]]>
             </Code>
         </Snippet>
