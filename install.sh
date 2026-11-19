@@ -18,13 +18,22 @@ install_macos() {
   brew install --cask font-jetbrains-mono-nerd-font
 }
 
-install_neovim_linux() {
-  local arch
+# Print this CPU as a release asset spells it: arch_name <x86_64 spelling> <arm64 spelling>
+arch_name() {
   case "$(uname -m)" in
-    x86_64) arch=x86_64 ;;
-    aarch64|arm64) arch=arm64 ;;
-    *) warn "Unsupported CPU: $(uname -m)"; exit 1 ;;
+    x86_64) echo "$1" ;;
+    aarch64|arm64) echo "$2" ;;
+    *) warn "Unsupported CPU: $(uname -m)"; return 1 ;;
   esac
+}
+
+# Latest release tag (e.g. v0.75.0) via the /releases/latest redirect, so no API rate limit
+latest_tag() {
+  curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$1/releases/latest" | sed 's#.*/tag/##'
+}
+
+install_neovim_linux() {
+  local arch; arch="$(arch_name x86_64 arm64)"
   log "Installing latest stable Neovim (nvim-linux-$arch) to /opt"
   local tmp; tmp="$(mktemp -d)"
   curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${arch}.tar.gz" -o "$tmp/nvim.tar.gz"
@@ -35,15 +44,27 @@ install_neovim_linux() {
 }
 
 install_tree_sitter_linux() {
-  local arch
-  case "$(uname -m)" in
-    x86_64) arch=x64 ;;
-    aarch64|arm64) arch=arm64 ;;
-  esac
+  local arch; arch="$(arch_name x64 arm64)"
   log "Installing tree-sitter CLI to $LOCAL_BIN"
   curl -fsSL "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-${arch}.gz" \
     | gunzip > "$LOCAL_BIN/tree-sitter"
   chmod +x "$LOCAL_BIN/tree-sitter"
+}
+
+# apt on Ubuntu 24.04 ships fzf 0.44; fzf-lua uses features from 0.53+
+install_fzf_linux() {
+  local arch tag; arch="$(arch_name amd64 arm64)"; tag="$(latest_tag junegunn/fzf)"
+  log "Installing fzf $tag to $LOCAL_BIN"
+  curl -fsSL "https://github.com/junegunn/fzf/releases/download/${tag}/fzf-${tag#v}-linux_${arch}.tar.gz" \
+    | tar -xz -C "$LOCAL_BIN" fzf
+}
+
+# Not packaged in Ubuntu 24.04 apt
+install_lazygit_linux() {
+  local arch tag; arch="$(arch_name x86_64 arm64)"; tag="$(latest_tag jesseduffield/lazygit)"
+  log "Installing lazygit $tag to $LOCAL_BIN"
+  curl -fsSL "https://github.com/jesseduffield/lazygit/releases/download/${tag}/lazygit_${tag#v}_linux_${arch}.tar.gz" \
+    | tar -xz -C "$LOCAL_BIN" lazygit
 }
 
 install_font_linux() {
@@ -60,11 +81,13 @@ install_debian() {
   log "Installing packages with apt"
   sudo apt-get update -qq
   sudo apt-get install -y -qq git curl unzip tar gzip xz-utils build-essential \
-    ripgrep fd-find fzf tmux fontconfig xclip wl-clipboard
+    ripgrep fd-find tmux fontconfig xclip wl-clipboard
   # Debian ships fd as `fdfind`
   if ! has fd && has fdfind; then ln -sf "$(command -v fdfind)" "$LOCAL_BIN/fd"; fi
   install_neovim_linux
   install_tree_sitter_linux
+  install_fzf_linux
+  install_lazygit_linux
   if grep -qi microsoft /proc/version 2>/dev/null; then
     warn "WSL detected: install a Nerd Font in Windows, not here (https://www.nerdfonts.com)"
   else
@@ -104,7 +127,7 @@ main() {
 
   log "Versions"
   nvim --version | head -1
-  for tool in rg fd fzf tmux tree-sitter; do
+  for tool in rg fd fzf tmux lazygit tree-sitter; do
     if has "$tool"; then printf '  %-12s ok\n' "$tool"; else printf '  %-12s MISSING\n' "$tool"; fi
   done
   case ":$PATH:" in *":$LOCAL_BIN:"*) ;; *) warn "Add $LOCAL_BIN to PATH in your shell rc";; esac
