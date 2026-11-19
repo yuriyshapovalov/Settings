@@ -56,6 +56,12 @@ opt.imsearch = 0
 opt.langmap = "ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,"
   .. "фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz"
 
+-- Remote-plugin hosts: no plugin here needs them; disabling skips their startup probes
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 -- Diagnostics display (used by LSP from step 3)
 vim.diagnostic.config({
   severity_sort = true,

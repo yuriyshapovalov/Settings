@@ -125,6 +125,10 @@ main() {
 
   link_configs
 
+  # Clone plugins at the revisions in nvim-pack-lock.json now, so the first real start is instant
+  log "Installing Neovim plugins from nvim-pack-lock.json"
+  nvim --headless "+qa" </dev/null
+
   log "Versions"
   nvim --version | head -1
   for tool in rg fd fzf tmux lazygit tree-sitter; do

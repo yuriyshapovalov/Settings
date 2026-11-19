@@ -35,9 +35,6 @@ map("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix" })
 -- Diagnostics: ]d / [d are built in; this opens the full message
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Line diagnostics" })
 
--- Temporary file explorer (built-in netrw); replaced by oil.nvim in step 2
-map("n", "-", "<cmd>Explore<CR>", { desc = "Open parent directory" })
-
 -- Leave terminal mode with a double Esc (single Esc goes to the program)
 map("t", "<Esc><Esc>", [[<C-\><C-n>]], { desc = "Exit terminal mode" })
 
